@@ -1,0 +1,2 @@
+stor_once_name_1/IP;
+stor_once_name_2/IP; . . .
