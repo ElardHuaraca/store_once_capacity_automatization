@@ -10,7 +10,7 @@ set url="http://%ip%/stor2rrd-cgi/detail-graph.sh?host=ALL&type=ALL&name=cap_tot
 curl --user "%user%:%pass%" -o "Capacity.csv" %url%
 echo "Prepared mail for send"
 
-for /f "tokens=*" %%A in ('cscript //nologo script.vbs') do set "mail=%%A"
+for /f "tokens=*" %%A in ('cscript //nologo dcript.vbs') do set "mail=%%A"
 
 exit /b 0
 
