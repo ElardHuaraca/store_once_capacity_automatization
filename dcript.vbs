@@ -28,8 +28,10 @@ objHTML.WriteLine "</tr></thead><tbody style=""text-align:center;"">"
 do until objFile.AtEndOfStream
 
     objHTML.WriteLine "<tr>"
+
     body = Split(objFile.ReadLine, ";")
     count = 0
+
     For Each data In body
         if count = 4 then
             freeTB = CDbl(data)
