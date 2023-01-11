@@ -1,9 +1,10 @@
 @if (@CodeSection == @Batch) @then
 @echo off
 
-set ip = "" // IP address of stor2rrd server
-set user = "" // Username for stor2rrd
-set pass = "" // Password for stor2rrd
+set "ip=" & ::IP address of stor2rrd server
+set "user=" & ::Username for stor2rrd
+set "pass=" & ::Password for stor2rrd
+
 
 set url="http://%ip%/stor2rrd-cgi/detail-graph.sh?host=ALL&type=ALL&name=cap_total&item=sum&time=d::::"
 

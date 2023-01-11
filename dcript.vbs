@@ -109,7 +109,7 @@ set htmlFile = objFSO.OpenTextFile(htmlPath, 1)
 objMail.From = from
 objMail.CC = destination
 objMail.To = destination
-objMail.Subject = "STORE ONCE REPORTE DE CAPACIDAD"
+objMail.Subject = "STORE ONCE REPORTE DE CAPACIDAD INFRA"
 objMail.HtmlBody = htmlFile.ReadAll
 objMail.AddAttachment htmlPath
 objMail.Send
