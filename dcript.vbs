@@ -5,9 +5,14 @@ csvPath = workspace & "\Capacity.csv"
 htmlPath = workspace & "\Capacity.html"
 
 Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set dictCounts = CreateObject("Scripting.Dictionary")
+
 Set objFile = objFSO.OpenTextFile(csvPath, 1)
+Set objFile_2 = objFSO.OpenTextFile(csvPath, 1)
 Set objHTML = objFSO.CreateTextFile(htmlPath, True)
 Set objStoreIP = objFSO.OpenTextFile(workspace & "\storeIP.txt", 1)
+
+CountValuesFromText(objFile_2)
 
 storeIP = Split(objStoreIP.ReadAll, ";")
 
@@ -24,7 +29,6 @@ objHTML.WriteLine "<th>% Libre</th>"
 objHTML.WriteLine "<th>Store IP</th>"
 objHTML.WriteLine "</tr></thead><tbody style=""text-align:center;"">"
 
-
 do until objFile.AtEndOfStream
 
     objHTML.WriteLine "<tr>"
@@ -33,7 +37,8 @@ do until objFile.AtEndOfStream
     count = 0
 
     For Each data In body
-        if count = 4 then
+
+        if count = 4 and body(1) = "Total" then
             freeTB = CDbl(data)
             if freeTB <= 5 then
                 objHTML.WriteLine "<td style=""background-color: #FF0000; color:white;"">" & data & "</td>"
@@ -41,29 +46,36 @@ do until objFile.AtEndOfStream
                 objHTML.WriteLine "<td>" & data & "</td>"
             end if
             count = 0
-        else
+        elseif count = 1 and body(1) = "Total" then
+            objHTML.WriteLine "<td> <b>" & data & "</b></td>"
+        elseif count = 0 and body(1) = "Total" then
+            objHTML.WriteLine "<td rowspan=""" & dictCounts.Item(data) & """>" & data & "</td>"
+        elseif count > 0 then
             objHTML.WriteLine "<td>" & data & "</td>"
         end if
+
         count = count + 1
     next
 
-    totalDouble = CDbl(Replace(body(2),".",","))
-    usedDouble = CDbl(Replace(body(3),".",","))
-    freeDouble = CDbl(Replace(body(4),".",","))
+    If body(1) = "Total" then
 
-    porcentUsed = Round((usedDouble / totalDouble) * 100,3)
-    porcentFree = Round((freeDouble / totalDouble) * 100,3)
+        totalDouble = CDbl(Replace(body(2),".",","))
+        usedDouble = CDbl(Replace(body(3),".",","))
+        freeDouble = CDbl(Replace(body(4),".",","))
 
-    objHTML.WriteLine "<td>" & porcentUsed & " %</td>"
-    objHTML.WriteLine "<td>" & porcentFree & " %</td>"
+        porcentUsed = Round((usedDouble / totalDouble) * 100,3)
+        porcentFree = Round((freeDouble / totalDouble) * 100,3)
 
-    condition = searchInArray(storeIP, body(0))
-    If condition(0) = 0 Then
-        objHTML.WriteLine "<td style=""background-color: #FF0000;"">" & "NO ESPECIFICADO" & "</td>"
-    Else
-        objHTML.WriteLine "<td style=""background-color: #000000; color:white;""><a href=""http://" & Split(storeIP(condition(1)),"/")(1) & """ style=""text-decoration:none; color: white;"">" & Split(storeIP(condition(1)),"/")(1) & "</a></td>"
-    End If
+        objHTML.WriteLine "<td rowspan="""&dictCounts.Item(body(0))&""">" & porcentUsed & " %</td>"
+        objHTML.WriteLine "<td rowspan="""&dictCounts.Item(body(0))&""">" & porcentFree & " %</td>"
 
+        condition = searchInArray(storeIP, body(0))
+        If condition(0) = 0 Then
+            objHTML.WriteLine "<td rowspan="""&dictCounts.Item(body(0))&""" style=""background-color: #FF0000;"">" & "NO ESPECIFICADO" & "</td>"
+        Else
+            objHTML.WriteLine "<td rowspan="""&dictCounts.Item(body(0))&""" style=""background-color: #000000; color:white;""><a href=""http://" & Split(storeIP(condition(1)),"/")(1) & """ style=""text-decoration:none; color: white;"">" & Split(storeIP(condition(1)),"/")(1) & "</a></td>"
+        End If
+    End if
     objHTML.WriteLine "</tr>"
 
 loop
@@ -118,3 +130,16 @@ function searchInArray(arr,str)
     Array(1) = 0
     searchInArray = Array
 end function
+
+Function CountValuesFromText(file)
+    Dim item, a
+    a = file.ReadLine
+
+    Do Until file.AtEndOfStream
+        item = Split(file.ReadLine,";")(0)
+        If Not dictCounts.Exists(item) Then
+            dictCounts.Add item, 0
+        End If
+        dictCounts.Item(item) = dictCounts.Item(item) + 1
+    Loop
+End Function
