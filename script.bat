@@ -1,14 +1,18 @@
 @if (@CodeSection == @Batch) @then
 @echo off
 
-set "ip=" & ::IP address of stor2rrd server
-set "user=" & ::Username for stor2rrd
-set "pass=" & ::Password for stor2rrd
+set "ip=10.240.30.95" & ::IP address of stor2rrd server
+set "user=admin" & ::Username for stor2rrd
+set "pass=admin" & ::Password for stor2rrd
 
 
-set url="http://%ip%/stor2rrd-cgi/detail-graph.sh?host=ALL&type=ALL&name=cap_total&item=sum&time=d::::"
+set URL_1="http://%ip%/stor2rrd-cgi/detail-graph.sh?host=ALL&type=ALL&name=cap_total&item=sum&time=d::::"
+set URL_2="http://%ip%/stor2rrd-cgi/detail-graph.sh?host=ALL&type=ALL&name=cap_pool&item=sum&time=d::::"
 
-curl --user "%user%:%pass%" -o "Capacity.csv" %url%
+curl --user "%user%:%pass%" -o "Capacity_1.csv" %URL_1%
+curl --user "%user%:%pass%" -o "Capacity_2.csv" %URL_2%
+
+
 echo "Prepared mail for send"
 
 for /f "tokens=*" %%A in ('cscript //nologo dcript.vbs') do set "mail=%%A"

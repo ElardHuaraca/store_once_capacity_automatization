@@ -1,14 +1,15 @@
 'Convert csv file to html.
 
 workspace = "" 'Change this path for your workspace
-csvPath = workspace & "\Capacity.csv"
+csvPath_1 = workspace & "\Capacity_1.csv"
+csvPath_2 = workspace & "\Capacity_2.csv"
 htmlPath = workspace & "\Capacity.html"
 
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 Set dictCounts = CreateObject("Scripting.Dictionary")
 
-Set objFile = objFSO.OpenTextFile(csvPath, 1)
-Set objFile_2 = objFSO.OpenTextFile(csvPath, 1)
+Set objFile = objFSO.OpenTextFile(csvPath_1, 1)
+Set objFile_2 = objFSO.OpenTextFile(csvPath_2, 1)
 Set objHTML = objFSO.CreateTextFile(htmlPath, True)
 Set objStoreIP = objFSO.OpenTextFile(workspace & "\storeIP.txt", 1)
 
@@ -38,13 +39,8 @@ do until objFile.AtEndOfStream
 
     For Each data In body
 
-        if count = 4 and body(1) = "Total" then
-            freeTB = CDbl(data)
-            if freeTB <= 5 then
-                objHTML.WriteLine "<td style=""background-color: #FF0000; color:white;"">" & data & "</td>"
-            else
-                objHTML.WriteLine "<td>" & data & "</td>"
-            end if
+        if count = 4 then
+            call redFlagOnFreeSpace(data, objHTML)
             count = 0
         elseif count = 1 and body(1) = "Total" then
             objHTML.WriteLine "<td> <b>" & data & "</b></td>"
@@ -78,6 +74,7 @@ do until objFile.AtEndOfStream
     End if
     objHTML.WriteLine "</tr>"
 
+    call writeLineWhenNameIsEquals(objFSO.OpenTextFile(csvPath_2,1),objHTML,body(0))
 loop
 
 objHTML.WriteLine "</tbody></table></body></html>"
@@ -138,8 +135,33 @@ Function CountValuesFromText(file)
     Do Until file.AtEndOfStream
         item = Split(file.ReadLine,";")(0)
         If Not dictCounts.Exists(item) Then
-            dictCounts.Add item, 0
+            dictCounts.Add item, 1
         End If
         dictCounts.Item(item) = dictCounts.Item(item) + 1
     Loop
+End Function
+
+Function writeLineWhenNameIsEquals(reader, writer,name)
+    Dim align, body
+    a = reader.ReadLine
+
+    do until reader.AtEndOfStream
+        body = Split(reader.ReadLine, ";")
+        if body(0) = name then
+            writer.WriteLine "<tr><td>" & body(1) & "</td>"
+            writer.WriteLine "<td>" & body(2) & "</td>"
+            writer.WriteLine "<td>" & body(3) & "</td>"
+            call redFlagOnFreeSpace(body(4),writer)
+        end if
+    loop
+End Function
+
+Function redFlagOnFreeSpace(freeSpace,writer)
+    Dim freeSpaceConvert
+    freeSpaceConvert = CDbl(freeSpace)
+    if freeSpaceConvert <= 5 then
+        writer.WriteLine "<td style=""background-color: #FF0000; color:white;"">" & freeSpace & "</td>"
+    else
+        writer.WriteLine "<td>" & freeSpace & "</td>"
+    end if
 End Function
